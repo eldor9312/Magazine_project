@@ -1,0 +1,120 @@
+{% extends 'flatpages/default.html' %}
+{% load i18n %}
+{% load tz %}
+{% load custom_filters %}
+{% load custom_tags %}
+{% load cache %}
+{% block title %}
+{% trans 'Новости' %}
+{% endblock title %}
+
+<!-- В контенте на странице мы выводим все товары -->
+{% block content %}
+   {% get_current_timezone as TIME_ZONE %}
+        <form action="" method="POST">
+            {% csrf_token %}
+            <label for="timezone">Time zone:</label>
+            <select name="timezone">
+            {% for tz in timezones %}
+                <option value="{{ tz }}"{% if tz == TIME_ZONE %} selected{% endif %}>{{ tz }}</option>
+            {% endfor %}
+            </select>
+            <input type="submit" value="Set">
+        </form>
+        {{ TIME_ZONE }}
+        {{ time_now|timezone:TIME_ZONE }} <!-- Отображаем время в выбранном часовом поясе  -->
+    <style>
+        body {background-color: {% if time_now.hour >= 19 or time_now.hour <= 7 %} darkcyan {% else %} powderblue {% endif %};}
+    </style>
+   <h1>All News!</h1>
+   <h2>{% trans 'Количество новостей' %}: {{ news|length }}</h2>
+   <h3>{{ time_now|date:'m.d.Y' }}</h3>
+   <hr>
+
+   <form action="" method="get">
+       {# Переменная, которую мы передали через контекст, может сгенерировать нам форму с полями #}
+       {{ filterset.form.as_p }}
+       {# Добавим кнопку отправки данных формы #}
+
+       <input type="submit" value={% trans "Найти" %} />
+
+   </form>
+   <form action="{% url 'set_language' %}" method="POST"> {% csrf_token %}
+       <input type="hidden" name="next" value="{{ redirect_to }}">
+
+            <select name="language" id="">
+                 {% get_available_languages as LANGUAGES %}
+                 {% get_language_info_list for LANGUAGES as languages %}
+
+                 {% for language in languages %}
+            <option value="{{ language.code }}" {% if language.code == LANGUAGE_CODE %} selected {% endif %}>
+               {{ language.name_local }} - {{ language.code }}
+            </option>
+                {% endfor %}
+            </select>
+        <input type="submit" value="set">
+    </form>
+   {% get_current_timezone as TIME_ZONE %}
+   <form action="" method="POST">
+       {% csrf_token %}
+       <label for="timezone">Time zone:</label>
+       <select name="timezone"></select>
+   </form>
+   {% if news %}
+       <table>
+           <tr>
+               <td>{% trans 'Название' %}</td>
+               <td>{% trans 'Текст' %}</td>
+               <td>{% trans 'Дата публикации' %}</td>
+               <td>{% trans 'Тип контента' %}</td>
+               <td>{% trans 'Рейтинг поста' %}</td>
+           </tr>
+
+           {% for new in news %}
+           <tr>
+               <td>{{ new.heading|censor }}</td>
+               <td>{{ new.text|truncatechars:10|censor }}</td>
+               <td>{{ new.published_date|truncatechars:11 }}</td>
+               {% if new.choice == "AR" %}
+               <td>{% trans 'Статья' %}</td>
+               {% else %}
+               <td>{% trans 'Новость' %}</td>
+               {% endif %}
+               <td>{{ new.post_rating }}</td>
+           </tr>
+           {% endfor %}
+
+       </table>
+        {% if is_not_author %}
+
+            <button> <a href="upgrade/"> {% trans 'Хочу стать автором!' %}</a> </button>
+
+        {% endif %}
+   {% else %}
+       <h2>{% trans 'Нет новостей' %}</h2>
+   {% endif %}
+   {% if page_obj.has_previous %}
+       {# Для каждой ссылки пагинации указываем обработку через новый тег #}
+       <a href="?{% url_replace page=1 %}">1</a>
+       {% if page_obj.previous_page_number != 1 %}
+           ...
+
+           <a href="?{% url_replace page=page_obj.previous_page_number %}">{{ page_obj.previous_page_number }}</a>
+
+       {% endif %}
+   {% endif %}
+
+   {{ page_obj.number }}
+
+   {% if page_obj.has_next %}
+
+       <a href="?{% url_replace page=page_obj.next_page_number %}">{{ page_obj.next_page_number }}</a>
+
+       {% if paginator.num_pages != page_obj.next_page_number %}
+           ...
+
+           <a href="?{% url_replace page=page_obj.paginator.num_pages %}">{{ page_obj.paginator.num_pages }}</a>
+
+       {% endif %}
+   {% endif %}
+{% endblock content %}

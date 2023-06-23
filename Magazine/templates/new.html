@@ -1,0 +1,28 @@
+<!--  наследуемся от шаблона default.html, который мы создавали для flatpages -->
+{% extends 'flatpages/default.html' %}
+{% load custom_filters %}
+{% load cache %}
+{% load i18n %}
+<!-- Название у нас будет Product -->
+{% block title %}
+{% trans 'Новости' %}
+{% endblock title %}
+
+<!-- В контенте на странице мы выводим сам товар, идентификатор которого был передан в url -->
+{% block content %}
+    <h1>{{ new.heading|censor }}</h1>
+    {% if new.choice == "AR" %}
+        <h2>{% trans 'Статья' %}</h2>
+    {% else %}
+        <h2>{% trans 'Новость' %}</h2>
+    {% endif %}
+    <p>{% trans "Дата публикации" %}: {{new.published_date|truncatechars:11}}</p>
+    <h5>{{new.text|censor}}</h5>
+    <h5>{{new.choice}}</h5>
+    {% if is_not_sub %}
+        {% cache 30 button %}
+        <button> <a href="subscribe/">{% trans 'Подпишись!' %}</a> </button>
+        {% endcache %}
+    {% endif %}
+
+{% endblock content %}
