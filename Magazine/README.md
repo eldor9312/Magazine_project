@@ -17,7 +17,7 @@ This project has:
      LANGUAGE_CODE = 'ru' #change for the language you are planning to use as main
      ````
    * ```
-     DEFAULT_FROM_EMAIL = "###" #your full email
+     DEFAULT_FROM_EMAIL = "##" #your full email
      EMAIL_HOST = 'smtp.yandex.ru'  # server adress of Yandex is the same for everyone
      EMAIL_PORT = 465  # port smtp is also the same
      EMAIL_HOST_USER = '###'  # username, if your email is user@gmail.com just write everything from it before @
